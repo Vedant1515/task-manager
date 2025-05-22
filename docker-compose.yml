@@ -1,26 +1,25 @@
 version: '3.8'
 
 services:
-
-  services:
   mongo:
     image: mongo:5.0
     ports:
-      - "27018:27017"  # host:container
+      - "27018:27017" # Avoid conflict with system MongoDB
     volumes:
       - mongo-data:/data/db
+    restart: unless-stopped
 
   api:
-    build: .
+    build:
+      context: .
+    image: task-manager-app
     ports:
       - "3000:3000"
     environment:
-      - MONGO_URI=mongodb://mongo:27017/taskdb_test  # Internal Docker network URI
+      - MONGO_URI=mongodb://mongo:27017/taskdb
     depends_on:
       - mongo
-
-
+    restart: unless-stopped
 
 volumes:
   mongo-data:
-
