@@ -1,3 +1,5 @@
+jest.setTimeout(20000); // Optional: Global 20s timeout
+
 const request = require('supertest');
 const mongoose = require('mongoose');
 const app = require('../src/app');
@@ -5,11 +7,14 @@ const Task = require('../src/models/Task');
 
 beforeAll(async () => {
   const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/taskdb_test';
-  await mongoose.connect(MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-  });
-});
+
+  if (mongoose.connection.readyState === 0) {
+    await mongoose.connect(MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    });
+  }
+}, 15000);
 
 afterAll(async () => {
   await mongoose.connection.dropDatabase();
