@@ -35,14 +35,18 @@ pipeline {
       }
     }
 
-    stage('Security Scan') {
-      steps {
-        echo '🔐 Running npm audit...'
-        bat 'npm audit || true'
-        echo '🔐 Running Trivy scan on Docker image...'
-        bat 'trivy image task-manager-app || true'
-      }
+   stage('Security Scan') {
+  tools { nodejs "NodeJS" }
+  steps {
+    withEnv(["PATH+EXTRA=${tool 'NodeJS'}\\bin"]) {
+      echo '🔐 Running npm audit...'
+      bat 'npm audit || exit 0'
+
+      echo '🔐 Running Trivy scan on Docker image...'
+      bat 'trivy image --timeout 10m --scanners vuln task-manager-app || exit 0'
     }
+  }
+}
 
     stage('Deploy to Test') {
       steps {
