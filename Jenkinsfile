@@ -57,19 +57,19 @@ pipeline {
 
     stage('Release to Production') {
       steps {
-    echo '🚢 Releasing to production...'
-    bat 'docker tag task-manager-app your-dockerhub-username/task-manager:latest'
-    bat 'docker push your-dockerhub-username/task-manager:latest'
+        echo '🏷️ Tagging release...'
+        bat 'git tag -a v1.0.${BUILD_NUMBER} -m "Release v1.0.${BUILD_NUMBER}"'
+        bat 'git pubat origin --tags'
+      }
     }
-}
 
-   stage('Monitoring') {
-  steps {
-    echo '📈 Monitoring container stats...'
-    bat 'docker stats --no-stream'
+    stage('Monitoring') {
+      steps {
+        echo '📈 Monitoring with Prometheus batould be configured externally...'
+        echo '📊 Ensure /metrics endpoint and Node Exporter are exposed in production.'
+      }
+    }
   }
-}
-
 
   post {
     always {
