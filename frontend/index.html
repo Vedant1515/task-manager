@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Task Manager</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Optional: Some basic styling */
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    ul { list-style-type: none; padding: 0; }
+    li { margin: 10px 0; }
+    button { margin-left: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Task Manager</h1>
+  <form id="taskForm">
+    <input type="text" id="title" placeholder="Task Title" required />
+    <input type="text" id="description" placeholder="Description" required />
+    <button type="submit">Add Task</button>
+  </form>
+  <ul id="taskList"></ul>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("taskForm");
+      const taskList = document.getElementById("taskList");
+
+      async function loadTasks() {
+        try {
+          const response = await fetch("/api/tasks");
+          if (!response.ok) throw new Error("Failed to fetch tasks");
+
+          const tasks = await response.json();
+          taskList.innerHTML = "";
+
+          tasks.forEach(task => {
+            const li = document.createElement("li");
+
+            li.innerHTML = `
+              ${task.pinned ? "📌 " : ""}
+              <strong>${task.title}</strong>: ${task.description}
+              <button class="delete-btn" data-id="${task._id}">Delete</button>
+              <button class="pin-btn" data-id="${task._id}" data-pinned="${!task.pinned}">
+                ${task.pinned ? "Unpin" : "Pin"}
+              </button>
+            `;
+            taskList.appendChild(li);
+          });
+
+          bindTaskEvents();
+        } catch (error) {
+          console.error("Error loading tasks:", error);
+        }
+      }
+
+      function bindTaskEvents() {
+        document.querySelectorAll(".delete-btn").forEach(button => {
+          button.addEventListener("click", async (e) => {
+            const id = e.target.dataset.id;
+            try {
+              const response = await fetch(`/api/tasks/${id}`, { method: "DELETE" });
+              if (!response.ok) throw new Error("Delete failed");
+              loadTasks();
+            } catch (error) {
+              console.error("Error deleting task:", error);
+            }
+          });
+        });
+
+        document.querySelectorAll(".pin-btn").forEach(button => {
+          button.addEventListener("click", async (e) => {
+            const id = e.target.dataset.id;
+            const pinned = e.target.dataset.pinned === "true";
+            try {
+              const response = await fetch(`/api/tasks/${id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ pinned })
+              });
+              if (!response.ok) throw new Error("Pin update failed");
+              loadTasks();
+            } catch (error) {
+              console.error("Error pinning task:", error);
+            }
+          });
+        });
+      }
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const title = document.getElementById("title").value.trim();
+        const description = document.getElementById("description").value.trim();
+
+        if (!title || !description) {
+          alert("Please fill out both fields.");
+          return;
+        }
+
+        try {
+          const response = await fetch("/api/tasks", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ title, description })
+          });
+          if (!response.ok) throw new Error("Task creation failed");
+
+          form.reset();
+          loadTasks();
+        } catch (error) {
+          console.error("Error adding task:", error);
+        }
+      });
+
+      loadTasks();
+    });
+  </script>
+</body>
+</html>
