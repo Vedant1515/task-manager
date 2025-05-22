@@ -1,25 +1,40 @@
-jest.setTimeout(20000); // Optional: Global 20s timeout
+// jest.setTimeout(20000); // Optional: Global 20s timeout
 
 const request = require('supertest');
 const mongoose = require('mongoose');
 const app = require('../src/app');
 const Task = require('../src/models/Task');
 
-beforeAll(async () => {
-  const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/taskdb_test';
+// jest.setTimeout(30000);
 
-  if (mongoose.connection.readyState === 0) {
-    await mongoose.connect(MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
-    });
+beforeAll(async () => {
+  const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/taskdb_test';
+  try {
+    console.log(`🔗 Connecting to ${MONGO_URI}...`);
+    if (mongoose.connection.readyState === 0) {
+      await mongoose.connect(MONGO_URI, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true
+      });
+    }
+    console.log("✅ MongoDB connected successfully");
+  } catch (err) {
+    console.error("❌ MongoDB connection failed:", err);
+    throw err;
   }
-}, 15000);
+});
+
 
 afterAll(async () => {
-  await mongoose.connection.dropDatabase();
-  await mongoose.disconnect();
+  try {
+    await mongoose.connection.dropDatabase();
+    await mongoose.disconnect();
+    console.log("🛑 Disconnected and test DB dropped");
+  } catch (err) {
+    console.error("❌ Error during teardown:", err);
+  }
 });
+
 
 beforeEach(async () => {
   await Task.deleteMany(); // Clear tasks before each test
