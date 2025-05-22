@@ -2,8 +2,8 @@ pipeline {
   agent any
 
   environment {
-    MONGODB_URI = 'mongodb://mongo:27017/taskdb'
-  }
+  MONGO_URI = 'mongodb://localhost:27018/taskdb_test'
+}
 
   tools {
     nodejs 'NodeJS'

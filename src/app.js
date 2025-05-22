@@ -4,7 +4,7 @@ const app = express();
 const taskRoutes = require('./routes/tasks');
 
 if (process.env.NODE_ENV !== 'test') {
-  mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/taskdb')
+  mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27018/taskdb')
     .then(() => console.log('✅ MongoDB connected'))
     .catch(err => console.error('❌ MongoDB error:', err));
 }

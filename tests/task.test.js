@@ -8,7 +8,7 @@ const Task = require('../src/models/Task');
 // jest.setTimeout(30000);
 
 beforeAll(async () => {
-  const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/taskdb_test';
+const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27018/taskdb_test";
   try {
     console.log(`🔗 Connecting to ${MONGO_URI}...`);
     if (mongoose.connection.readyState === 0) {
