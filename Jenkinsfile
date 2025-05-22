@@ -22,7 +22,8 @@ pipeline {
     stage('Test') {
       steps {
         echo '🧪 Running unit tests...'
-        bat 'NODE_ENV=test npm test'
+        bat 'set NODE_ENV=test && npm test'
+
       }
     }
 
