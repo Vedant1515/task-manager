@@ -22,7 +22,8 @@ pipeline {
     stage('Test') {
       steps {
         echo '🧪 Running unit tests...'
-        bat 'set NODE_ENV=test && npm test'
+        bat 'set MONGO_URI=mongodb://localhost:27017/taskdb_test && npm test'
+
 
       }
     }

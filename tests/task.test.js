@@ -4,7 +4,8 @@ const app = require('../src/app');
 const Task = require('../src/models/Task');
 
 beforeAll(async () => {
-  await mongoose.connect('mongodb://localhost:27017/taskdb_test', {
+  const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/taskdb_test';
+  await mongoose.connect(MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
   });
