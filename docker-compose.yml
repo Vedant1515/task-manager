@@ -3,24 +3,36 @@ version: '3.8'
 services:
   mongo:
     image: mongo:5.0
+    container_name: task-manager-mongo
     ports:
-      - "27019:27017"
+      - "27020:27017"
     volumes:
       - mongo-data:/data/db
 
   api:
     build: .
+    container_name: task-manager-api
     ports:
-      - "3001:3000"
+      - "3002:3000"
     depends_on:
       - mongo
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/taskdb
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/status"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   prometheus:
     image: prom/prometheus
+    container_name: task-manager-prometheus
+    ports:
+      - "9091:9090"
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
-    ports:
-      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
 
 volumes:
   mongo-data:

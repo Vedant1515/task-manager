@@ -1,12 +1,12 @@
 const app = require('./app');
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3002;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
 
-const client = require('prom-client');
-const collectDefaultMetrics = client.collectDefaultMetrics;
-collectDefaultMetrics();
+// const client = require('prom-client');
+// const collectDefaultMetrics = client.collectDefaultMetrics;
+// collectDefaultMetrics();
 
 app.get('/metrics', async (req, res) => {
   res.set('Content-Type', client.register.contentType);
