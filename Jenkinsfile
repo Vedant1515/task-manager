@@ -7,6 +7,7 @@ pipeline {
 
   environment {
     DOCKER_IMAGE = "task-manager-app"
+    SONARQUBE_ENV = "SonarQube" // This must match the configured Jenkins SonarQube server name
   }
 
   stages {
@@ -26,24 +27,40 @@ pipeline {
       }
     }
 
-stage('Test') {
-  steps {
-    echo '🧪 Cleaning up any existing test containers...'
-    bat 'docker rm -f task-manager-mongo task-manager-test 2>nul || exit /b 0'
+    stage('Test') {
+      steps {
+        echo '🧪 Cleaning up any existing test containers...'
+        bat 'docker rm -f task-manager-mongo task-manager-test 2>nul || exit /b 0'
 
-    echo '🐳 Building test container...'
-    bat 'docker-compose build test'
+        echo '🐳 Building test container...'
+        bat 'docker-compose build test'
 
-    echo '🧪 Running unit tests inside Docker...'
-    bat 'docker-compose run --rm test'
-  }
-}
-
+        echo '🧪 Running unit tests inside Docker...'
+        bat 'docker-compose run --rm test'
+      }
+    }
 
     stage('Code Quality') {
       steps {
-        echo '🔍 Running ESLint...'
-        bat 'npx eslint src/**/*.js || exit /b 0'
+        echo '🔍 Running SonarQube analysis...'
+        bat 'npm run test -- --coverage' // Ensures lcov.info is created
+        withSonarQubeEnv("${env.SONARQUBE_ENV}") {
+          bat 'sonar-scanner'
+        }
+      }
+    }
+
+    stage('Security') {
+      steps {
+        echo '🔐 Running Security Analysis...'
+
+        echo '📦 npm audit for dependency vulnerabilities...'
+        bat 'npm audit --json > audit-report.json || exit /b 0'
+        bat 'type audit-report.json'
+
+        echo '🔎 Docker image scan with Trivy...'
+        bat 'trivy image --format table --output trivy-report.txt ${env.DOCKER_IMAGE} || exit /b 0'
+        bat 'type trivy-report.txt'
       }
     }
 
