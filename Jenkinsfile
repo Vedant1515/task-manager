@@ -73,15 +73,20 @@ pipeline {
           bat 'call healthcheck.bat'
       }
     }
-    stage('Release to Production') {
-      when {
-        expression { currentBuild.currentResult == 'SUCCESS' }
-      }
-      steps {
-        echo '🚀 Releasing to production...'
-        // Add Docker push or deploy commands here
-      }
+stage('Release to Production') {
+  when {
+    expression { currentBuild.currentResult == 'SUCCESS' }
+  }
+  steps {
+    echo '🚀 Releasing to production...'
+    withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+      bat "docker login -u %DOCKER_USER% -p %DOCKER_PASS%"
+      bat "docker tag task-manager-app vedant1515/task-manager-app:latest"
+      bat "docker push vedant1515/task-manager-app:latest"
     }
+  }
+}
+
 
     stage('Monitoring') {
       when {
