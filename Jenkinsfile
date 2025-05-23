@@ -52,6 +52,8 @@ pipeline {
       steps {
         echo '🚀 Deploying to test environment using Docker Compose...'
         bat 'docker-compose -f docker-compose.yml up -d'
+        bat 'curl -f http://localhost:3001/api/status || exit /b 1'
+
       }
     }
 
@@ -63,6 +65,7 @@ pipeline {
         git tag -a v1.0.%BUILD_NUMBER% -m "Release v1.0.%BUILD_NUMBER%"
         git push origin --tags
         '''
+        bat 'curl -f http://localhost:3001/api/status || exit /b 1'
 
       }
     }
