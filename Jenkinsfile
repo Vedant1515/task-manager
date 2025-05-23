@@ -20,6 +20,7 @@ pipeline {
       steps {
         echo '📦 Installing dependencies...'
         bat 'npm install'
+
         echo '🐳 Building Docker image...'
         bat "docker build -t ${env.DOCKER_IMAGE} ."
       }
@@ -44,20 +45,17 @@ pipeline {
 
     stage('Pre-clean') {
       steps {
-        echo '🧹 Removing residual containers...'
+        echo '🧹 Cleaning up containers...'
         bat 'docker-compose down || exit /b 0'
       }
     }
 
     stage('Deploy to Test') {
       steps {
-        echo '🚀 Starting containers for testing...'
-        bat '''
-          docker-compose down || exit /b 0
-          docker-compose up -d
-        '''
+        echo '🚀 Spinning up containers for testing...'
+        bat 'docker-compose up -d'
 
-        echo '🔍 Checking health endpoint...'
+        echo '✅ Verifying health endpoint...'
         bat '''
           for /L %%i in (1,1,10) do (
             curl -f http://localhost:3002/api/status && exit /b 0
@@ -82,14 +80,14 @@ pipeline {
         expression { currentBuild.currentResult == 'SUCCESS' }
       }
       steps {
-        echo '📈 Monitoring started...'
+        echo '📈 Monitoring enabled...'
       }
     }
   }
 
   post {
     always {
-      echo '🧹 Cleanup...'
+      echo '🧹 Final cleanup...'
       bat 'docker-compose down || exit /b 0'
     }
     success {
