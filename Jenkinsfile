@@ -34,20 +34,24 @@ pipeline {
       }
     }
 
-    stage('Deploy to Test') {
+  stage('Deploy to Test') {
   steps {
     echo '🚀 Docker Compose Up...'
-    bat 'docker-compose down || exit /b 0'
-    bat 'docker-compose -f docker-compose.yml up -d'
+
+    bat '''
+      echo "🧹 Cleaning up old containers..."
+      docker rm -f task-manager-api task-manager-mongo task-manager-prometheus 2>nul || exit /b 0
+      docker-compose down || exit /b 0
+      docker-compose -f docker-compose.yml up -d
+    '''
 
     echo '✅ Checking health endpoint...'
     bat '''
       for /L %%i in (1,1,10) do (
         curl -f http://localhost:3002/api/status && exit /b 0
-        timeout /T 1 >nul
+        timeout /T 2 >nul
       )
-      echo "❌ Health check failed!"
-      exit /b 1
+      echo "❌ Health check failed!" && exit /b 1
     '''
   }
 }
