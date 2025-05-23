@@ -4,8 +4,8 @@ services:
   mongo:
     image: mongo:5.0
     container_name: task-manager-mongo
-    ports:
-      - "27021:27017"  # 🔁 Changed from 27020 to 27021 to avoid conflict
+    expose:
+      - "27017"
     volumes:
       - mongo-data:/data/db
 
@@ -13,7 +13,7 @@ services:
     build: .
     container_name: task-manager-api
     ports:
-      - "3003:3000"  # 🔁 Changed from 3002 to 3003 to avoid conflict
+      - "3002:3000"
     depends_on:
       - mongo
     environment:
@@ -28,7 +28,7 @@ services:
     image: prom/prometheus
     container_name: task-manager-prometheus
     ports:
-      - "9092:9090"  # 🔁 Changed from 9091 to 9092 to avoid conflict
+      - "9092:9090" # Changed from 9091 to avoid conflicts
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
     command:

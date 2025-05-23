@@ -1,6 +1,4 @@
-// ✅ tests/task.test.js (Updated)
-
-jest.setTimeout(30000); // ✅ Global 30s timeout to prevent timeout errors
+jest.setTimeout(30000);
 
 const request = require('supertest');
 const mongoose = require('mongoose');
@@ -8,7 +6,7 @@ const app = require('../src/app');
 const Task = require('../src/models/Task');
 
 beforeAll(async () => {
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27021/taskdb_test';
+  const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27020/taskdb_test';
   try {
     console.log(`🔗 Connecting to ${MONGO_URI}...`);
     if (mongoose.connection.readyState === 0) {
@@ -24,7 +22,6 @@ const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27021/taskdb_tes
   }
 });
 
-
 afterAll(async () => {
   try {
     await mongoose.connection.dropDatabase();
@@ -36,7 +33,7 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
-  await Task.deleteMany(); // Clear tasks before each test
+  await Task.deleteMany();
 });
 
 describe('Task API', () => {
