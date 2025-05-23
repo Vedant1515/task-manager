@@ -1,14 +1,17 @@
 // server.js
 const app = require('./app');
-const PORT = process.env.PORT || 3002;
-const client = require('prom-client'); // ✅ FIXED: Add missing import
-client.collectDefaultMetrics();       // ✅ Optional: start collecting default metrics
+const client = require('prom-client');
+client.collectDefaultMetrics();
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+const PORT = process.env.PORT || 3000;
+const HOST = '0.0.0.0'; // ✅ Important for Docker
 
+// 🔥 Place all routes before listen
 app.get('/metrics', async (req, res) => {
   res.set('Content-Type', client.register.contentType);
   res.end(await client.register.metrics());
+});
+
+app.listen(PORT, HOST, () => {
+  console.log(`🚀 Server running at http://${HOST}:${PORT}`);
 });
