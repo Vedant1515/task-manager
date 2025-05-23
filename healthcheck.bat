@@ -3,7 +3,7 @@ SET RETRIES=10
 SET COUNT=0
 
 :loop
-curl -s -o nul -f http://localhost:3002/api/status
+curl -s -f http://localhost:3002/api/status >nul 2>&1
 IF %ERRORLEVEL%==0 (
   echo ✅ Health check passed!
   EXIT /B 0
@@ -15,5 +15,7 @@ IF %COUNT% GEQ %RETRIES% (
   EXIT /B 1
 )
 
-timeout /T 2 >nul
+REM Use safer delay without redirection
+ping -n 3 127.0.0.1 >nul
+
 GOTO loop
