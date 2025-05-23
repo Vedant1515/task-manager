@@ -7,7 +7,6 @@ pipeline {
 
   environment {
     DOCKER_IMAGE = "task-manager-app"
-    SONARQUBE_ENV = "SonarQube" // This must match the configured Jenkins SonarQube server name
   }
 
   stages {
@@ -43,24 +42,18 @@ pipeline {
     stage('Code Quality') {
       steps {
         echo '🔍 Running SonarQube analysis...'
-        bat 'npm run test -- --coverage' // Ensures lcov.info is created
-        withSonarQubeEnv("${env.SONARQUBE_ENV}") {
-          bat 'sonar-scanner'
+        withSonarQubeEnv('MySonarQube') {
+          bat 'npm run test -- --coverage'
+          bat 'npx sonar-scanner'
         }
       }
     }
 
     stage('Security') {
       steps {
-        echo '🔐 Running Security Analysis...'
-
-        echo '📦 npm audit for dependency vulnerabilities...'
+        echo '🛡️ Running security scans...'
         bat 'npm audit --json > audit-report.json || exit /b 0'
-        bat 'type audit-report.json'
-
-        echo '🔎 Docker image scan with Trivy...'
-        bat 'trivy image --format table --output trivy-report.txt ${env.DOCKER_IMAGE} || exit /b 0'
-        bat 'type trivy-report.txt'
+        bat 'docker run --rm -v %cd%:/project aquasec/trivy:latest fs /project > trivy-report.txt || exit /b 0'
       }
     }
 
@@ -93,6 +86,7 @@ pipeline {
       }
       steps {
         echo '🚀 Releasing to production...'
+        // Insert release logic here (e.g., Docker push, tagging, etc.)
       }
     }
 
@@ -102,6 +96,7 @@ pipeline {
       }
       steps {
         echo '📈 Monitoring enabled...'
+        // Insert monitoring integration steps here
       }
     }
   }
