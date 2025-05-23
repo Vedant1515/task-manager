@@ -59,25 +59,21 @@ pipeline {
       steps {
         echo '🧹 Cleaning up containers...'
         bat 'docker-compose down || exit /b 0'
+        bat 'docker-compose down -v --remove-orphans || exit /b 0'
+
       }
     }
 
     stage('Deploy to Test') {
-      steps {
-        echo '🚀 Spinning up containers for testing...'
-        bat 'docker-compose up -d'
+        steps {
+          echo '🚀 Spinning up containers for testing...'
+          bat 'docker-compose up -d'
 
-        echo '✅ Verifying health endpoint...'
-        bat '''
-          for /L %%i in (1,1,10) do (
-            curl -s -o nul -f http://localhost:3002/api/status && exit /b 0
-            timeout /T 2 >nul
-          )
-          echo ❌ Health check failed!
-          exit /b 1
-        '''
+          echo '✅ Verifying health endpoint...'
+          bat 'for /L %%i in (1,1,10) do ( curl -s -o nul -f http://localhost:3002/api/status && exit /b 0 || timeout /T 2 >nul ) & echo ❌ Health check failed! & exit /b 1'
       }
     }
+
 
     stage('Release to Production') {
       when {
@@ -104,6 +100,8 @@ pipeline {
     always {
       echo '🧹 Final cleanup...'
       bat 'docker-compose down || exit /b 0'
+      bat 'docker-compose down -v --remove-orphans || exit /b 0'
+
     }
     success {
       echo '✅ Pipeline completed successfully!'
