@@ -7,6 +7,7 @@ pipeline {
 
   environment {
     DOCKER_IMAGE = "task-manager-app"
+    MONGO_URI = "mongodb://mongo:27017/taskdb_test"
   }
 
   stages {
@@ -29,6 +30,11 @@ pipeline {
 
     stage('Test') {
       steps {
+        echo '🧪 Cleaning up any existing test containers...'
+        bat '''
+          docker rm -f task-manager-mongo task-manager-test 2>nul || exit /b 0
+        '''
+
         echo '🧪 Running unit tests inside Docker...'
         bat 'docker-compose run --rm test'
       }

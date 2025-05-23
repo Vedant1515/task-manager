@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1747990194478" clover="3.2.0">
-  <project timestamp="1747990194479" name="All files">
+<coverage generated="1747990922916" clover="3.2.0">
+  <project timestamp="1747990922916" name="All files">
     <metrics statements="37" coveredstatements="32" conditionals="10" coveredconditionals="7" methods="6" coveredmethods="4" elements="53" coveredelements="43" complexity="0" loc="37" ncloc="37" packages="3" files="3" classes="3"/>
     <package name="src">
       <metrics statements="11" coveredstatements="8" conditionals="4" coveredconditionals="1" methods="2" coveredmethods="0"/>
-      <file name="app.js" path="C:\Users\vedan\Desktop\SIT753\task-manager\src\app.js">
+      <file name="app.js" path="/app/src/app.js">
         <metrics statements="11" coveredstatements="8" conditionals="4" coveredconditionals="1" methods="2" coveredmethods="0"/>
         <line num="2" count="1" type="stmt"/>
         <line num="3" count="1" type="stmt"/>
@@ -21,7 +21,7 @@
     </package>
     <package name="src.models">
       <metrics statements="3" coveredstatements="3" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
-      <file name="Task.js" path="C:\Users\vedan\Desktop\SIT753\task-manager\src\models\Task.js">
+      <file name="Task.js" path="/app/src/models/Task.js">
         <metrics statements="3" coveredstatements="3" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="1" count="1" type="stmt"/>
         <line num="3" count="1" type="stmt"/>
@@ -30,7 +30,7 @@
     </package>
     <package name="src.routes">
       <metrics statements="23" coveredstatements="21" conditionals="6" coveredconditionals="6" methods="4" coveredmethods="4"/>
-      <file name="tasks.js" path="C:\Users\vedan\Desktop\SIT753\task-manager\src\routes\tasks.js">
+      <file name="tasks.js" path="/app/src/routes/tasks.js">
         <metrics statements="23" coveredstatements="21" conditionals="6" coveredconditionals="6" methods="4" coveredmethods="4"/>
         <line num="1" count="1" type="stmt"/>
         <line num="2" count="1" type="stmt"/>
