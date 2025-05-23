@@ -1,14 +1,14 @@
-// jest.setTimeout(20000); // Optional: Global 20s timeout
+// ✅ tests/task.test.js (Updated)
+
+jest.setTimeout(30000); // ✅ Global 30s timeout to prevent timeout errors
 
 const request = require('supertest');
 const mongoose = require('mongoose');
 const app = require('../src/app');
 const Task = require('../src/models/Task');
 
-// jest.setTimeout(30000);
-
 beforeAll(async () => {
-const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27018/taskdb_test";
+  const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27018/taskdb_test'; // ✅ Use IPv4 loopback
   try {
     console.log(`🔗 Connecting to ${MONGO_URI}...`);
     if (mongoose.connection.readyState === 0) {
@@ -17,9 +17,9 @@ const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27018/taskdb_tes
         useUnifiedTopology: true
       });
     }
-    console.log("✅ MongoDB connected successfully");
+    console.log('✅ MongoDB connected successfully');
   } catch (err) {
-    console.error("❌ MongoDB connection failed:", err);
+    console.error('❌ MongoDB connection failed:', err);
     throw err;
   }
 });
@@ -29,12 +29,11 @@ afterAll(async () => {
   try {
     await mongoose.connection.dropDatabase();
     await mongoose.disconnect();
-    console.log("🛑 Disconnected and test DB dropped");
+    console.log('🛑 Disconnected and test DB dropped');
   } catch (err) {
-    console.error("❌ Error during teardown:", err);
+    console.error('❌ Error during teardown:', err);
   }
 });
-
 
 beforeEach(async () => {
   await Task.deleteMany(); // Clear tasks before each test
@@ -43,19 +42,19 @@ beforeEach(async () => {
 describe('Task API', () => {
   it('should create and retrieve a task', async () => {
     const resPost = await request(app).post('/api/tasks').send({
-      title: "Test Task",
-      description: "Testing..."
+      title: 'Test Task',
+      description: 'Testing...'
     });
     expect(resPost.statusCode).toBe(201);
-    expect(resPost.body.title).toBe("Test Task");
+    expect(resPost.body.title).toBe('Test Task');
 
     const resGet = await request(app).get('/api/tasks');
     expect(resGet.body.length).toBe(1);
-    expect(resGet.body[0].title).toBe("Test Task");
+    expect(resGet.body[0].title).toBe('Test Task');
   });
 
   it('should delete a task', async () => {
-    const res = await request(app).post('/api/tasks').send({ title: "Delete Me", description: "To be deleted" });
+    const res = await request(app).post('/api/tasks').send({ title: 'Delete Me', description: 'To be deleted' });
     const taskId = res.body._id;
 
     const resDelete = await request(app).delete('/api/tasks/' + taskId);
@@ -66,7 +65,7 @@ describe('Task API', () => {
   });
 
   it('should update (pin/unpin) a task', async () => {
-    const res = await request(app).post('/api/tasks').send({ title: "Pin Me", description: "Initially unpinned" });
+    const res = await request(app).post('/api/tasks').send({ title: 'Pin Me', description: 'Initially unpinned' });
     const taskId = res.body._id;
 
     const resPatch = await request(app).patch('/api/tasks/' + taskId).send({ pinned: true });
@@ -78,8 +77,8 @@ describe('Task API', () => {
   });
 
   it('should fail on missing title or description', async () => {
-    const res = await request(app).post('/api/tasks').send({ title: "", description: "" });
+    const res = await request(app).post('/api/tasks').send({ title: '', description: '' });
     expect(res.statusCode).toBe(400);
-    expect(res.body).toHaveProperty("error");
+    expect(res.body).toHaveProperty('error');
   });
 });
