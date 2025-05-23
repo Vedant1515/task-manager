@@ -64,33 +64,15 @@ pipeline {
       }
     }
 
-    stage('Deploy to Test') {
-      steps {
-        echo '🚀 Spinning up containers for testing...'
-        bat 'docker-compose up -d'
+      stage('Deploy to Test') {
+        steps {
+          echo '🚀 Spinning up containers for testing...'
+          bat 'docker-compose up -d'
 
-        echo '✅ Verifying health endpoint...'
-        bat '''
-        @echo off
-        set RETRIES=10
-        set COUNT=0
-        :loop
-        curl -s -o nul -f http://localhost:3002/api/status
-        if %errorlevel%==0 (
-        echo ✅ Health check passed!
-        exit /b 0
-        )
-        set /A COUNT+=1
-        if %COUNT% GEQ %RETRIES% (
-        echo ❌ Health check failed!
-        exit /b 1
-        )
-        timeout /T 2 >nul
-        goto loop
-      '''
+          echo '✅ Verifying health endpoint...'
+          bat 'call healthcheck.bat'
+      }
     }
-  } 
-
     stage('Release to Production') {
       when {
         expression { currentBuild.currentResult == 'SUCCESS' }
