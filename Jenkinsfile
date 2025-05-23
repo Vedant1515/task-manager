@@ -16,7 +16,7 @@ pipeline {
 
     stage('Tool Install') {
       tools {
-        nodejs 'NodeJS_18'
+        nodejs 'NodeJS'
       }
     }
 
