@@ -35,15 +35,22 @@ pipeline {
     }
 
     stage('Deploy to Test') {
-      steps {
-        echo '🚀 Docker Compose Up...'
-        bat 'docker-compose down || exit /b 0'
-        bat 'docker-compose -f docker-compose.yml up -d'
+  steps {
+    echo '🚀 Docker Compose Up...'
+    bat 'docker-compose down || exit /b 0'
+    bat 'docker-compose -f docker-compose.yml up -d'
 
-        echo '✅ Checking health endpoint...'
-        bat 'curl -f http://localhost:3002/api/status || exit /b 1'
-      }
-    }
+    echo '✅ Checking health endpoint...'
+    bat '''
+      for /L %%i in (1,1,10) do (
+        curl -f http://localhost:3002/api/status && exit /b 0
+        timeout /T 1 >nul
+      )
+      echo "❌ Health check failed!"
+      exit /b 1
+    '''
+  }
+}
 
     stage('Release to Production') {
       steps {
