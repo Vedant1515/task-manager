@@ -1,17 +1,19 @@
-// server.js
-const app = require('./app');
+const express = require('express');
 const client = require('prom-client');
-client.collectDefaultMetrics();
+const app = require('./app');
+const statusRoutes = require('./routes/status'); // 🆕 ensure this is here
 
-const PORT = process.env.PORT || 3000;
-const HOST = '0.0.0.0'; // ✅ Important for Docker
+const PORT = process.env.PORT || 3002;
 
-// 🔥 Place all routes before listen
+// Mount health route directly to support health check
+app.use('/api', statusRoutes);
+
+// Optional: Prometheus metrics if you're using Prometheus
 app.get('/metrics', async (req, res) => {
   res.set('Content-Type', client.register.contentType);
   res.end(await client.register.metrics());
 });
 
-app.listen(PORT, HOST, () => {
-  console.log(`🚀 Server running at http://${HOST}:${PORT}`);
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
 });
