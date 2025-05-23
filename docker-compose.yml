@@ -1,6 +1,31 @@
 version: '3.8'
 
 services:
+ 
+
+  grafana:
+    image: grafana/grafana
+    container_name: task-manager-grafana
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin`
+      - GF_SECURITY_ADMIN_PASSWORD=Vedant@1503
+
+  alertmanager:
+    image: prom/alertmanager
+    container_name: task-manager-alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
   mongo:
     image: mongo:5.0
     container_name: task-manager-mongo

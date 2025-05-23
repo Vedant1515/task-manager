@@ -1,0 +1,14 @@
+global:
+  smtp_smarthost: 'smtp.gmail.com:587'
+  smtp_from: 'vedantpandya1515@gmail.com'
+  smtp_auth_username: 'vedantpandya1515@gmail.com'
+  smtp_auth_password: 'ctbl ktxm eqde rjps'
+
+route:
+  receiver: 'email-alert'
+
+receivers:
+  - name: 'email-alert'
+    email_configs:
+      - to: 'recipient@example.com'
+        send_resolved: true
