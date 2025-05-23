@@ -59,7 +59,7 @@ pipeline {
       steps {
         echo '🏷️ Tagging release...'
         bat 'git tag -a v1.0.${BUILD_NUMBER} -m "Release v1.0.${BUILD_NUMBER}"'
-        bat 'git pubat origin --tags'
+        bat 'git push origin --tags'
       }
     }
 
