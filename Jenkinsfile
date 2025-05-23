@@ -30,8 +30,10 @@ pipeline {
       steps {
         echo '🧪 Cleaning up any existing test containers...'
         bat 'docker rm -f task-manager-mongo task-manager-test 2>nul || exit /b 0'
+
         echo '🐳 Building test container...'
         bat 'docker-compose build test'
+
         echo '🧪 Running unit tests inside Docker...'
         bat 'docker-compose run --rm test'
       }
@@ -59,38 +61,27 @@ pipeline {
       steps {
         echo '🧹 Cleaning up containers...'
         bat 'docker-compose down || exit /b 0'
-        bat 'docker-compose down -v --remove-orphans || exit /b 0'
-
       }
     }
 
-stage('Deploy to Test') {
-  steps {
-    echo '🚀 Spinning up containers for testing...'
-    bat 'docker-compose up -d'
+    stage('Deploy to Test') {
+      steps {
+        echo '🚀 Spinning up containers for testing...'
+        bat 'docker-compose up -d'
 
-    echo '✅ Verifying health endpoint...'
-    bat '''
-    call curl -s -o nul -f http://localhost:3002/api/status || ^
-    timeout /T 2 >nul && ^
-    curl -s -o nul -f http://localhost:3002/api/status || ^
-    timeout /T 2 >nul && ^
-    curl -s -o nul -f http://localhost:3002/api/status || ^
-    timeout /T 2 >nul && ^
-    curl -s -o nul -f http://localhost:3002/api/status || ^
-    timeout /T 2 >nul && ^
-    curl -s -o nul -f http://localhost:3002/api/status || ^
-    timeout /T 2 >nul && ^
-    curl -s -o nul -f http://localhost:3002/api/status || ^
-    timeout /T 2 >nul && ^
-    curl -s -o nul -f http://localhost:3002/api/status || ^
-    timeout /T 2 >nul && ^
-    curl -s -o nul -f http://localhost:3002/api/status || ^
-    ( echo ❌ Health check failed! & exit /b 1 )
-    '''
-  }
-}
-
+        echo '✅ Verifying health endpoint...'
+        bat '''
+          SETLOCAL ENABLEDELAYEDEXPANSION
+          SET RETRIES=10
+          FOR /L %%i IN (1,1,!RETRIES!) DO (
+            curl -s -o nul -f http://localhost:3002/api/status && exit /b 0
+            timeout /T 2 >nul
+          )
+          echo ❌ Health check failed!
+          exit /b 1
+        '''
+      }
+    }
 
     stage('Release to Production') {
       when {
@@ -98,7 +89,7 @@ stage('Deploy to Test') {
       }
       steps {
         echo '🚀 Releasing to production...'
-        // Optional: Add Docker push or tagging here
+        // Add Docker push or deploy commands here
       }
     }
 
@@ -107,8 +98,8 @@ stage('Deploy to Test') {
         expression { currentBuild.currentResult == 'SUCCESS' }
       }
       steps {
-        echo '📈 Monitoring setup complete.'
-        // Optional: Add Prometheus/Grafana hook or alert setup
+        echo '📈 Monitoring enabled...'
+        // Add Prometheus/Grafana setup if required
       }
     }
   }
@@ -118,7 +109,6 @@ stage('Deploy to Test') {
       echo '🧹 Final cleanup...'
       bat 'docker-compose down || exit /b 0'
       bat 'docker-compose down -v --remove-orphans || exit /b 0'
-
     }
     success {
       echo '✅ Pipeline completed successfully!'
