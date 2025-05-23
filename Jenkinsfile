@@ -2,7 +2,7 @@ pipeline {
   agent any
 
   environment {
-    MONGO_URI = 'mongodb://localhost:27018/taskdb_test'
+    MONGO_URI = 'mongodb://localhost:27021/taskdb_test' // ✅ Updated test DB port
   }
 
   tools {
@@ -23,7 +23,7 @@ pipeline {
     stage('Test') {
       steps {
         echo '🧪 Running unit tests...'
-        bat 'set MONGO_URI=mongodb://localhost:27018/taskdb_test && npm test'
+        bat 'set MONGO_URI=mongodb://localhost:27021/taskdb_test && npm test' // ✅ Updated port
       }
     }
 
@@ -34,25 +34,13 @@ pipeline {
       }
     }
 
-    // stage('Security Scan') {
-    //   steps {
-    //     withEnv(["PATH+EXTRA=${tool 'NodeJS'}\\bin"]) {
-    //       echo '🔐 Running npm audit...'
-    //       bat 'npm audit || exit /b 0'
-
-    //       echo '🔐 Running Trivy scan on Docker image...'
-    //       bat 'trivy image --timeout 10m --scanners vuln task-manager-app || exit /b 0'
-    //     }
-    //   }
-    // }
-
     stage('Deploy to Test') {
       steps {
         echo '🚀 Deploying to test environment using Docker Compose...'
         bat 'docker-compose -f docker-compose.yml up -d'
 
         echo '🔍 Verifying app health in test environment...'
-        bat 'curl -f http://localhost:3002/api/status || exit /b 1'
+        bat 'curl -f http://localhost:3003/api/status || exit /b 1' // ✅ Updated port
       }
     }
 
@@ -69,22 +57,22 @@ pipeline {
         bat '''
           docker tag task-manager-app task-manager-prod
           docker rm -f task-manager-prod 2>nul || exit /b 0
-          docker run -d --name task-manager-prod -p 3003:3000 task-manager-prod
+          docker run -d --name task-manager-prod -p 3004:3000 task-manager-prod
         '''
 
         echo '✅ Verifying production deployment...'
-        bat 'curl -f http://localhost:3003/api/status || exit /b 1'
+        bat 'curl -f http://localhost:3004/api/status || exit /b 1' // ✅ Adjusted port to avoid conflict
       }
     }
 
     stage('Monitoring') {
       steps {
         echo '📈 Verifying Prometheus monitoring endpoint...'
-        bat 'curl -f http://localhost:9091 || exit /b 1'
-        bat 'curl -f http://localhost:9091/targets || exit /b 1'
+        bat 'curl -f http://localhost:9092 || exit /b 1' // ✅ Updated Prometheus port
+        bat 'curl -f http://localhost:9092/targets || exit /b 1'
 
         echo '📊 Ensure /metrics endpoint is live...'
-        bat 'curl -f http://localhost:3003/metrics || exit /b 1'
+        bat 'curl -f http://localhost:3004/metrics || exit /b 1' // ✅ Updated to production port
       }
     }
   }

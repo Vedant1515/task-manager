@@ -8,7 +8,7 @@ const app = require('../src/app');
 const Task = require('../src/models/Task');
 
 beforeAll(async () => {
-  const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27018/taskdb_test'; // ✅ Use IPv4 loopback
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27021/taskdb_test';
   try {
     console.log(`🔗 Connecting to ${MONGO_URI}...`);
     if (mongoose.connection.readyState === 0) {
