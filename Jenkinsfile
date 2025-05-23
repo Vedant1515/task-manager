@@ -7,7 +7,6 @@ pipeline {
 
   environment {
     DOCKER_IMAGE = "task-manager-app"
-    MONGO_URI = "mongodb://localhost:27018/taskdb_test"
   }
 
   stages {
@@ -30,8 +29,8 @@ pipeline {
 
     stage('Test') {
       steps {
-        echo '🧪 Running unit tests...'
-        bat "set MONGO_URI=${env.MONGO_URI} && npm test"
+        echo '🧪 Running unit tests inside Docker...'
+        bat 'docker-compose run --rm test'
       }
     }
 
