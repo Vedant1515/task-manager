@@ -26,15 +26,19 @@ pipeline {
       }
     }
 
-    stage('Test') {
-      steps {
-        echo '🧪 Cleaning up any existing test containers...'
-        bat 'docker rm -f task-manager-mongo task-manager-test 2>nul || exit /b 0'
+stage('Test') {
+  steps {
+    echo '🧪 Cleaning up any existing test containers...'
+    bat 'docker rm -f task-manager-mongo task-manager-test 2>nul || exit /b 0'
 
-        echo '🧪 Running unit tests inside Docker...'
-        bat 'docker-compose run --rm test'
-      }
-    }
+    echo '🐳 Building test container...'
+    bat 'docker-compose build test'
+
+    echo '🧪 Running unit tests inside Docker...'
+    bat 'docker-compose run --rm test'
+  }
+}
+
 
     stage('Code Quality') {
       steps {
