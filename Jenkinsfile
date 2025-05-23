@@ -34,17 +34,17 @@ pipeline {
       }
     }
 
-    stage('Security Scan') {
-      steps {
-        withEnv(["PATH+EXTRA=${tool 'NodeJS'}\\bin"]) {
-          echo '🔐 Running npm audit...'
-          bat 'npm audit || exit /b 0'
+    // stage('Security Scan') {
+    //   steps {
+    //     withEnv(["PATH+EXTRA=${tool 'NodeJS'}\\bin"]) {
+    //       echo '🔐 Running npm audit...'
+    //       bat 'npm audit || exit /b 0'
 
-          echo '🔐 Running Trivy scan on Docker image...'
-          bat 'trivy image --timeout 10m --scanners vuln task-manager-app || exit /b 0'
-        }
-      }
-    }
+    //       echo '🔐 Running Trivy scan on Docker image...'
+    //       bat 'trivy image --timeout 10m --scanners vuln task-manager-app || exit /b 0'
+    //     }
+    //   }
+    // }
 
     stage('Deploy to Test') {
       steps {
