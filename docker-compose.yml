@@ -44,12 +44,5 @@ services:
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
 
-  task-manager-api:
-    build: .
-    ports:
-      - "3002:3002"
-    environment:
-      - PORT=3002
-
 volumes:
   mongo-data:
