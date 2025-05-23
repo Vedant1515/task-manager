@@ -58,8 +58,12 @@ pipeline {
     stage('Release to Production') {
       steps {
         echo '🏷️ Tagging release...'
-        bat 'git tag -a v1.0.${BUILD_NUMBER} -m "Release v1.0.${BUILD_NUMBER}"'
-        bat 'git push origin --tags'
+        bat '''
+        git tag -d v1.0.%BUILD_NUMBER% 2>nul
+        git tag -a v1.0.%BUILD_NUMBER% -m "Release v1.0.%BUILD_NUMBER%"
+        git push origin --tags
+        '''
+
       }
     }
 
