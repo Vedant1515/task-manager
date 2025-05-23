@@ -1,6 +1,10 @@
 pipeline {
   agent any
 
+  tools {
+    nodejs 'NodeJS'
+  }
+
   environment {
     DOCKER_IMAGE = "task-manager-app"
     MONGO_URI = "mongodb://localhost:27018/taskdb_test"
@@ -11,12 +15,6 @@ pipeline {
     stage('Checkout') {
       steps {
         checkout scm
-      }
-    }
-
-    stage('Tool Install') {
-      tools {
-        nodejs 'NodeJS'
       }
     }
 
@@ -79,7 +77,6 @@ pipeline {
       }
       steps {
         echo '🚀 Releasing to production...'
-        // Add production deployment steps if needed
       }
     }
 
@@ -89,7 +86,6 @@ pipeline {
       }
       steps {
         echo '📈 Monitoring enabled...'
-        // Add monitoring logic here if needed
       }
     }
   }
