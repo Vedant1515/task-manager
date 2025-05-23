@@ -1,19 +1,13 @@
-const express = require('express');
-const client = require('prom-client');
+// src/server.js
 const app = require('./app');
-const statusRoutes = require('./routes/status'); // 🆕 ensure this is here
+const statusRoutes = require('./routes/status'); // ✅ Import health route
 
 const PORT = process.env.PORT || 3002;
 
-// Mount health route directly to support health check
+// ✅ Mount health route if not already mounted in app.js
 app.use('/api', statusRoutes);
-
-// Optional: Prometheus metrics if you're using Prometheus
-app.get('/metrics', async (req, res) => {
-  res.set('Content-Type', client.register.contentType);
-  res.end(await client.register.metrics());
-});
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
+
