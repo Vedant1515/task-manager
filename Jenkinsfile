@@ -8,6 +8,15 @@ pipeline {
   tools {
     nodejs 'NodeJS'
   }
+  stage('Pre-clean') {
+  steps {
+    echo '🧹 Forcing cleanup of any containers using port 3002...'
+    bat '''
+      FOR /F "tokens=5" %%P IN ('netstat -aon ^| findstr :3002') DO taskkill /PID %%P /F >nul 2>&1
+      docker rm -f task-manager-api task-manager-mongo task-manager-prometheus >nul 2>&1 || exit /b 0
+    '''
+  }
+}
 
   stages {
     stage('Build') {
