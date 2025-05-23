@@ -2,6 +2,8 @@ pipeline {
   agent any
 
   tools {
+    jdk 'Java-21'
+
     nodejs 'NodeJS'
   }
 
@@ -43,6 +45,7 @@ pipeline {
       steps {
         echo '🔍 Running SonarQube analysis...'
         withSonarQubeEnv('MySonarQube') {
+          
           bat 'npm run test -- --coverage'
           bat 'npx sonar-scanner'
         }
