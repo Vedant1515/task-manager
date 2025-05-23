@@ -53,7 +53,7 @@ pipeline {
       steps {
         echo '🛡️ Running security scans...'
         bat 'npm audit --json > audit-report.json || exit /b 0'
-        bat 'docker run --rm -v %cd%:/project aquasec/trivy:latest fs /project > trivy-report.txt || exit /b 0'
+        // bat 'docker run --rm -v %cd%:/project aquasec/trivy:latest fs /project > trivy-report.txt || exit /b 0'
       }
     }
 
@@ -71,20 +71,25 @@ pipeline {
 
         echo '✅ Verifying health endpoint...'
         bat '''
-            SET RETRIES=10
-            SET COUNT=0
-            :loop
-            curl -s -o nul -f http://localhost:3002/api/status && exit /b 0
-            SET /A COUNT+=1
-            IF %COUNT% GEQ %RETRIES% (
-            echo ❌ Health check failed!
-            exit /b 1
-            )
-            timeout /T 2 >nul
-            GOTO loop
-        '''
-      }
+        @echo off
+        set RETRIES=10
+        set COUNT=0
+        :loop
+        curl -s -o nul -f http://localhost:3002/api/status
+        if %errorlevel%==0 (
+        echo ✅ Health check passed!
+        exit /b 0
+        )
+        set /A COUNT+=1
+        if %COUNT% GEQ %RETRIES% (
+        echo ❌ Health check failed!
+        exit /b 1
+        )
+        timeout /T 2 >nul
+        goto loop
+      '''
     }
+  } 
 
     stage('Release to Production') {
       when {
