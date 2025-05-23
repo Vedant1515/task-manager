@@ -7,11 +7,9 @@ pipeline {
 
   environment {
     DOCKER_IMAGE = "task-manager-app"
-    MONGO_URI = "mongodb://mongo:27017/taskdb_test"
   }
 
   stages {
-
     stage('Checkout') {
       steps {
         checkout scm
@@ -22,7 +20,6 @@ pipeline {
       steps {
         echo '📦 Installing dependencies...'
         bat 'npm install'
-
         echo '🐳 Building Docker image...'
         bat "docker build -t ${env.DOCKER_IMAGE} ."
       }
@@ -31,9 +28,7 @@ pipeline {
     stage('Test') {
       steps {
         echo '🧪 Cleaning up any existing test containers...'
-        bat '''
-          docker rm -f task-manager-mongo task-manager-test 2>nul || exit /b 0
-        '''
+        bat 'docker rm -f task-manager-mongo task-manager-test 2>nul || exit /b 0'
 
         echo '🧪 Running unit tests inside Docker...'
         bat 'docker-compose run --rm test'
@@ -49,23 +44,20 @@ pipeline {
 
     stage('Pre-clean') {
       steps {
-        echo '🧹 Forcing cleanup of any containers using port 3002...'
-        bat '''
-          FOR /F "tokens=5" %%P IN ('netstat -aon ^| findstr :3002') DO taskkill /PID %%P /F >nul 2>&1
-          docker rm -f task-manager-api task-manager-mongo task-manager-prometheus >nul 2>&1 || exit /b 0
-        '''
+        echo '🧹 Removing residual containers...'
+        bat 'docker-compose down || exit /b 0'
       }
     }
 
     stage('Deploy to Test') {
       steps {
-        echo '🚀 Docker Compose Up...'
+        echo '🚀 Starting containers for testing...'
         bat '''
           docker-compose down || exit /b 0
           docker-compose up -d
         '''
 
-        echo '✅ Checking health endpoint...'
+        echo '🔍 Checking health endpoint...'
         bat '''
           for /L %%i in (1,1,10) do (
             curl -f http://localhost:3002/api/status && exit /b 0
@@ -90,7 +82,7 @@ pipeline {
         expression { currentBuild.currentResult == 'SUCCESS' }
       }
       steps {
-        echo '📈 Monitoring enabled...'
+        echo '📈 Monitoring started...'
       }
     }
   }

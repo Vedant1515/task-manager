@@ -10,7 +10,10 @@ services:
       - mongo-data:/data/db
 
   api:
-    build: .
+    build:
+      context: .
+      args:
+        NODE_ENV: production
     container_name: task-manager-api
     ports:
       - "3002:3002"
@@ -24,15 +27,6 @@ services:
       timeout: 5s
       retries: 3
 
-  test:
-    build: .
-    container_name: task-manager-test
-    command: ["npm", "test"]
-    environment:
-      - MONGO_URI=mongodb://mongo:27017/taskdb_test
-    depends_on:
-      - mongo
-
   prometheus:
     image: prom/prometheus
     container_name: task-manager-prometheus
@@ -42,6 +36,18 @@ services:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
+
+  test:
+    build:
+      context: .
+      args:
+        NODE_ENV: development
+    container_name: task-manager-test
+    command: npm test
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/taskdb_test
+    depends_on:
+      - mongo
 
 volumes:
   mongo-data:
