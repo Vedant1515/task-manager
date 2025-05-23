@@ -71,14 +71,17 @@ pipeline {
 
         echo '✅ Verifying health endpoint...'
         bat '''
-          SETLOCAL ENABLEDELAYEDEXPANSION
-          SET RETRIES=10
-          FOR /L %%i IN (1,1,!RETRIES!) DO (
+            SET RETRIES=10
+            SET COUNT=0
+            :loop
             curl -s -o nul -f http://localhost:3002/api/status && exit /b 0
+            SET /A COUNT+=1
+            IF %COUNT% GEQ %RETRIES% (
+            echo ❌ Health check failed!
+            exit /b 1
+            )
             timeout /T 2 >nul
-          )
-          echo ❌ Health check failed!
-          exit /b 1
+            GOTO loop
         '''
       }
     }
