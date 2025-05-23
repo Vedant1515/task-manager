@@ -64,15 +64,32 @@ pipeline {
       }
     }
 
-    stage('Deploy to Test') {
-        steps {
-          echo '🚀 Spinning up containers for testing...'
-          bat 'docker-compose up -d'
+stage('Deploy to Test') {
+  steps {
+    echo '🚀 Spinning up containers for testing...'
+    bat 'docker-compose up -d'
 
-          echo '✅ Verifying health endpoint...'
-          bat 'for /L %%i in (1,1,10) do ( curl -s -o nul -f http://localhost:3002/api/status && exit /b 0 || timeout /T 2 >nul ) & echo ❌ Health check failed! & exit /b 1'
-      }
-    }
+    echo '✅ Verifying health endpoint...'
+    bat '''
+    call curl -s -o nul -f http://localhost:3002/api/status || ^
+    timeout /T 2 >nul && ^
+    curl -s -o nul -f http://localhost:3002/api/status || ^
+    timeout /T 2 >nul && ^
+    curl -s -o nul -f http://localhost:3002/api/status || ^
+    timeout /T 2 >nul && ^
+    curl -s -o nul -f http://localhost:3002/api/status || ^
+    timeout /T 2 >nul && ^
+    curl -s -o nul -f http://localhost:3002/api/status || ^
+    timeout /T 2 >nul && ^
+    curl -s -o nul -f http://localhost:3002/api/status || ^
+    timeout /T 2 >nul && ^
+    curl -s -o nul -f http://localhost:3002/api/status || ^
+    timeout /T 2 >nul && ^
+    curl -s -o nul -f http://localhost:3002/api/status || ^
+    ( echo ❌ Health check failed! & exit /b 1 )
+    '''
+  }
+}
 
 
     stage('Release to Production') {
