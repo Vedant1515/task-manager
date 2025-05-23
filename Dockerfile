@@ -1,20 +1,12 @@
-# Dockerfile
 FROM node:18
 
 WORKDIR /app
 
+# Copy dependencies and install all (including dev)
 COPY package*.json ./
+RUN npm install
 
-# Use ARG to pass NODE_ENV and conditionally install dependencies
-ARG NODE_ENV
-RUN if [ "$NODE_ENV" = "production" ]; then \
-      npm install --omit=dev; \
-    else \
-      npm install; \
-    fi
-
+# Copy source code
 COPY . .
 
-EXPOSE 3002
-
-CMD ["node", "src/server.js"]
+CMD ["npm", "start"]
