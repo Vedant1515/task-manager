@@ -1,13 +1,10 @@
-// src/server.js
 const app = require('./app');
-const statusRoutes = require('./routes/status'); // ✅ Import health route
+const statusRoutes = require('./routes/status'); // Import health route
 
-const PORT = process.env.PORT || 3002;
-
-// ✅ Mount health route if not already mounted in app.js
+// Mount it here in case app.js doesn't mount it
 app.use('/api', statusRoutes);
 
+const PORT = process.env.PORT || 3002;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
-
