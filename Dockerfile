@@ -1,20 +1,20 @@
-# Use Node 18
+# Dockerfile
 FROM node:18
 
-# Set working directory
 WORKDIR /app
 
-# Copy package files first
 COPY package*.json ./
 
-# Install ALL dependencies (including dev) for test builds
-RUN npm install
+# Use ARG to pass NODE_ENV and conditionally install dependencies
+ARG NODE_ENV
+RUN if [ "$NODE_ENV" = "production" ]; then \
+      npm install --omit=dev; \
+    else \
+      npm install; \
+    fi
 
-# Copy rest of the app
 COPY . .
 
-# Set environment variable default
-ENV NODE_ENV=development
+EXPOSE 3002
 
-# Start command for production (won't affect test runs)
-CMD ["npm", "start"]
+CMD ["node", "src/server.js"]
