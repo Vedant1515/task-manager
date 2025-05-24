@@ -96,6 +96,12 @@ stage('Release to Production') {
       }
       steps {
         echo '📈 Monitoring enabled...'
+        bat 'docker ps -a --filter "name=task-manager"'
+        bat 'docker logs task-manager-prometheus || exit /b 0'
+        bat 'docker logs task-manager-grafana || exit /b 0'
+        bat 'docker logs task-manager-alertmanager || exit /b 0'
+
+
         // Add Prometheus/Grafana setup if required
       }
     }
