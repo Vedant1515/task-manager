@@ -22,7 +22,7 @@ scrape_configs:
       module: [http_2xx]
     static_configs:
       - targets:
-          - http://task-manager-api:3002/api/status
+        - http://task-manager-api:3002/api/status
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target

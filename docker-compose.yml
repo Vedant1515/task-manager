@@ -2,7 +2,11 @@ version: '3.8'
 
 services:
  
-
+  blackbox:
+    image: prom/blackbox-exporter:latest
+    container_name: task-manager-blackbox
+    ports:
+      - "9115:9115"
   grafana:
     image: grafana/grafana
     container_name: task-manager-grafana
