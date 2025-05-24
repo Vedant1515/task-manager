@@ -67,6 +67,8 @@ pipeline {
       stage('Deploy to Test') {
         steps {
           echo '🚀 Spinning up containers for testing...'
+          bat 'docker rm -f task-manager-api task-manager-test task-manager-mongo task-manager-prometheus task-manager-grafana task-manager-alertmanager 2>nul || exit /b 0'
+
           bat 'docker-compose up -d'
 
           echo '✅ Verifying health endpoint...'
