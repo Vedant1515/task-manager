@@ -3,12 +3,16 @@ global:
   smtp_from: 'vedantpandya1515@gmail.com'
   smtp_auth_username: 'vedantpandya1515@gmail.com'
   smtp_auth_password: 'ctbl ktxm eqde rjps'
+  smtp_require_tls: true
 
 route:
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 1h
   receiver: 'email-alert'
 
 receivers:
   - name: 'email-alert'
     email_configs:
-      - to: 'recipient@example.com'
+      - to: 'vedantpandya1515@gmail.com'
         send_resolved: true

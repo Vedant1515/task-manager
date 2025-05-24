@@ -1,10 +1,11 @@
 groups:
-  - name: task_manager_alerts
+  - name: task_manager_rules
     rules:
       - alert: APIInstanceDown
         expr: up{job="task-manager-api"} == 0
-        for: 30s
+        for: 15s
         labels:
           severity: critical
         annotations:
           summary: "Task Manager API is down"
+          description: "The instance {{ $labels.instance }} is not responding."
