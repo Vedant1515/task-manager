@@ -51,9 +51,16 @@ pipeline {
 
     stage('Security') {
       steps {
-        echo '🛡️ Running security scans...'
+        echo '🛡️ Running npm audit...'
         bat 'npm audit --json > audit-report.json || exit /b 0'
-        // bat 'docker run --rm -v %cd%:/project aquasec/trivy:latest fs /project > trivy-report.txt || exit /b 0'
+
+        echo '🔐 Running Trivy scan on Docker image...'
+        bat '''
+          trivy image --severity CRITICAL,HIGH --no-progress --exit-code 0 %DOCKER_IMAGE% > trivy-report.txt || exit /b 0
+        '''
+
+        echo '🗂️ Archiving Trivy report...'
+        archiveArtifacts artifacts: 'trivy-report.txt', allowEmptyArchive: true
       }
     }
 
@@ -62,36 +69,33 @@ pipeline {
         echo '🧹 Cleaning up containers...'
         bat 'docker rm -f $(docker ps -aq --filter name=task-manager) 2>nul || exit /b 0'
         bat 'docker-compose down -v --remove-orphans || exit /b 0'
-
-        
       }
     }
 
-      stage('Deploy to Test') {
-        steps {
-          echo '🚀 Spinning up containers for testing...'
-          bat 'docker rm -f task-manager-api task-manager-test task-manager-mongo task-manager-prometheus task-manager-grafana task-manager-alertmanager 2>nul || exit /b 0'
+    stage('Deploy to Test') {
+      steps {
+        echo '🚀 Spinning up containers for testing...'
+        bat 'docker rm -f task-manager-api task-manager-test task-manager-mongo task-manager-prometheus task-manager-grafana task-manager-alertmanager 2>nul || exit /b 0'
+        bat 'docker-compose up -d'
 
-          bat 'docker-compose up -d'
-
-          echo '✅ Verifying health endpoint...'
-          bat 'call healthcheck.bat'
+        echo '✅ Verifying health endpoint...'
+        bat 'call healthcheck.bat'
       }
     }
-stage('Release to Production') {
-  when {
-    expression { currentBuild.currentResult == 'SUCCESS' }
-  }
-  steps {
-    echo '🚀 Releasing to production...'
-    withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-      bat "docker login -u %DOCKER_USER% -p %DOCKER_PASS%"
-      bat "docker tag task-manager-app vedant1515/task-manager-app:latest"
-      bat "docker push vedant1515/task-manager-app:latest"
-    }
-  }
-}
 
+    stage('Release to Production') {
+      when {
+        expression { currentBuild.currentResult == 'SUCCESS' }
+      }
+      steps {
+        echo '🚀 Releasing to production...'
+        withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+          bat "docker login -u %DOCKER_USER% -p %DOCKER_PASS%"
+          bat "docker tag %DOCKER_IMAGE% vedant1515/task-manager-app:latest"
+          bat "docker push vedant1515/task-manager-app:latest"
+        }
+      }
+    }
 
     stage('Monitoring') {
       when {
@@ -103,15 +107,11 @@ stage('Release to Production') {
         bat 'docker logs task-manager-prometheus || exit /b 0'
         bat 'docker logs task-manager-grafana || exit /b 0'
         bat 'docker logs task-manager-alertmanager || exit /b 0'
-
-
-        // Add Prometheus/Grafana setup if required
       }
     }
   }
 
   post {
-    
     success {
       echo '✅ Pipeline completed successfully!'
     }
