@@ -67,8 +67,11 @@ pipeline {
     stage('Pre-clean') {
       steps {
         echo '🧹 Cleaning up containers...'
-        bat 'docker rm -f $(docker ps -aq --filter name=task-manager) 2>nul || exit /b 0'
-        bat 'docker-compose down -v --remove-orphans || exit /b 0'
+      bat '''
+        FOR /F "tokens=*" %%i IN ('docker ps -aq --filter name=task-manager') DO docker rm -f %%i 2>nul || exit /b 0
+        docker-compose down -v --remove-orphans || exit /b 0
+      '''
+
       }
     }
 
