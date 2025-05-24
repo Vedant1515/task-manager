@@ -108,11 +108,7 @@ stage('Release to Production') {
   }
 
   post {
-    always {
-      echo '🧹 Final cleanup...'
-      bat 'docker-compose down || exit /b 0'
-      bat 'docker-compose down -v --remove-orphans || exit /b 0'
-    }
+    
     success {
       echo '✅ Pipeline completed successfully!'
     }
