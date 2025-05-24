@@ -77,6 +77,8 @@ pipeline {
         echo '🚀 Spinning up containers for testing...'
         bat 'docker rm -f task-manager-api task-manager-test task-manager-mongo task-manager-prometheus task-manager-grafana task-manager-alertmanager 2>nul || exit /b 0'
         bat 'docker-compose up -d'
+        bat 'docker-compose up -d --build'
+
 
         echo '✅ Verifying health endpoint...'
         bat 'call healthcheck.bat'
