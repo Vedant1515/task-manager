@@ -60,7 +60,10 @@ pipeline {
     stage('Pre-clean') {
       steps {
         echo '🧹 Cleaning up containers...'
-        bat 'docker-compose down || exit /b 0'
+        bat 'docker rm -f $(docker ps -aq --filter name=task-manager) 2>nul || exit /b 0'
+        bat 'docker-compose down -v --remove-orphans || exit /b 0'
+
+        
       }
     }
 
