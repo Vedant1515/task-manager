@@ -1,5 +1,3 @@
-// app.js
-
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -12,7 +10,7 @@ client.collectDefaultMetrics(); // Collect default Node.js metrics
 
 const app = express();
 
-// Metrics endpoint — must come first
+// 🔥 Metrics endpoint — must come first!
 app.get('/metrics', async (req, res) => {
   try {
     res.set('Content-Type', client.register.contentType);
