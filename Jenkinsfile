@@ -66,22 +66,21 @@ pipeline {
 
     stage('Pre-clean') {
       steps {
-        echo '🧹 Cleaning up containers...'
-      bat '''
-        FOR /F "tokens=*" %%i IN ('docker ps -aq --filter name=task-manager') DO docker rm -f %%i 2>nul || exit /b 0
-        docker-compose down -v --remove-orphans || exit /b 0
-      '''
-
+        echo '🧹 Cleaning up all task-manager containers...'
+        bat '''
+          FOR /F "tokens=*" %%i IN ('docker ps -aq --filter "name=task-manager"') DO docker rm -f %%i 2>nul || exit /b 0
+          docker-compose down -v --remove-orphans || exit /b 0
+        '''
       }
     }
 
     stage('Deploy to Test') {
       steps {
         echo '🚀 Spinning up containers for testing...'
-        bat 'docker rm -f task-manager-api task-manager-test task-manager-mongo task-manager-prometheus task-manager-grafana task-manager-alertmanager 2>nul || exit /b 0'
+        bat 'docker rm -f task-manager-api task-manager-test task-manager-mongo task-manager-prometheus task-manager-grafana task-manager-alertmanager task-manager-blackbox 2>nul || exit /b 0'
+
         bat 'docker-compose up -d'
         bat 'docker-compose up -d --build'
-
 
         echo '✅ Verifying health endpoint...'
         bat 'call healthcheck.bat'
