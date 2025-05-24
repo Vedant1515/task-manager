@@ -7,6 +7,16 @@ const statusRoutes = require('./routes/status');
 
 const app = express();
 
+const client = require('prom-client');
+const collectDefaultMetrics = client.collectDefaultMetrics;
+collectDefaultMetrics();
+
+app.get('/metrics', async (req, res) => {
+  res.set('Content-Type', client.register.contentType);
+  res.end(await client.register.metrics());
+});
+
+
 // Middleware
 app.use(cors());
 app.use(express.json());
