@@ -4,25 +4,26 @@ global:
 alerting:
   alertmanagers:
     - static_configs:
-        - targets:
-            - 'alertmanager:9093'
+        - targets: ['alertmanager:9093']
 
 rule_files:
   - "alert-rules.yml"
 
-
 scrape_configs:
+  # Collect native /metrics from task-manager-api
   - job_name: 'task-manager-api'
+    metrics_path: /metrics
     static_configs:
       - targets: ['task-manager-api:3002']
 
+  # External health check via Blackbox Exporter
   - job_name: 'api_health_check'
     metrics_path: /probe
     params:
       module: [http_2xx]
     static_configs:
       - targets:
-        - http://task-manager-api:3002/api/status
+          - http://task-manager-api:3002/api/status
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
@@ -30,5 +31,3 @@ scrape_configs:
         target_label: instance
       - target_label: __address__
         replacement: blackbox:9115
-
-        
