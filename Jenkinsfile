@@ -8,6 +8,7 @@ pipeline {
 
   environment {
     DOCKER_IMAGE = "task-manager-app"
+    BUILD_TAG = "task-manager-app:${BUILD_NUMBER}"
   }
 
   stages {
@@ -21,20 +22,27 @@ pipeline {
       steps {
         echo '📦 Installing dependencies...'
         bat 'npm install'
-        echo '🐳 Building Docker image...'
-        bat "docker build -t %DOCKER_IMAGE% ."
+
+        echo '🐳 Building Docker image with version tag...'
+        bat "docker build -t %BUILD_TAG% ."
+
+        echo '📌 Committing build tag to version control...'
+        bat '''
+          git config user.email "ci@taskmanager.com"
+          git config user.name "CI Bot"
+          git tag build-%BUILD_NUMBER%
+          git push origin build-%BUILD_NUMBER%
+        '''
       }
     }
 
     stage('Test') {
       steps {
-        echo '🧪 Cleaning up any existing test containers...'
+        echo '🧪 Cleaning up existing test containers...'
         bat 'docker rm -f task-manager-mongo task-manager-test 2>nul || exit /b 0'
 
-        echo '🐳 Building test container...'
+        echo '🐳 Building and running unit/integration tests...'
         bat 'docker-compose build test'
-
-        echo '🧪 Running unit tests inside Docker...'
         bat 'docker-compose run --rm test'
       }
     }
@@ -56,10 +64,9 @@ pipeline {
 
         echo '🔐 Running Trivy scan on Docker image...'
         bat '''
-          trivy image --severity CRITICAL,HIGH --no-progress --exit-code 0 %DOCKER_IMAGE% > trivy-report.txt || exit /b 0
+          trivy image --severity CRITICAL,HIGH --no-progress --exit-code 0 %BUILD_TAG% > trivy-report.txt || exit /b 0
         '''
 
-        echo '🗂️ Archiving Trivy report...'
         archiveArtifacts artifacts: 'trivy-report.txt', allowEmptyArchive: true
       }
     }
@@ -76,13 +83,10 @@ pipeline {
 
     stage('Deploy to Test') {
       steps {
-        echo '🚀 Spinning up containers for testing...'
-        bat 'docker rm -f task-manager-api task-manager-test task-manager-mongo task-manager-prometheus task-manager-grafana task-manager-alertmanager task-manager-blackbox 2>nul || exit /b 0'
-
-        bat 'docker-compose up -d'
+        echo '🚀 Deploying to test environment...'
         bat 'docker-compose up -d --build'
 
-        echo '✅ Verifying health endpoint...'
+        echo '✅ Healthcheck verification...'
         bat 'call healthcheck.bat'
       }
     }
@@ -92,10 +96,10 @@ pipeline {
         expression { currentBuild.currentResult == 'SUCCESS' }
       }
       steps {
-        echo '🚀 Releasing to production...'
+        echo '🚀 Pushing image to Docker Hub...'
         withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
           bat "docker login -u %DOCKER_USER% -p %DOCKER_PASS%"
-          bat "docker tag %DOCKER_IMAGE% vedant1515/task-manager-app:latest"
+          bat "docker tag %BUILD_TAG% vedant1515/task-manager-app:latest"
           bat "docker push vedant1515/task-manager-app:latest"
         }
       }
@@ -106,7 +110,7 @@ pipeline {
         expression { currentBuild.currentResult == 'SUCCESS' }
       }
       steps {
-        echo '📈 Monitoring enabled...'
+        echo '📈 Monitoring logs...'
         bat 'docker ps -a --filter "name=task-manager"'
         bat 'docker logs task-manager-prometheus || exit /b 0'
         bat 'docker logs task-manager-grafana || exit /b 0'

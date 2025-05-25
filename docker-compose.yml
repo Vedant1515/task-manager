@@ -83,6 +83,8 @@ services:
       - "3007:80"
     depends_on:
       - api
+    environment:
+      - API_URL=http://task-manager-api:3002  # Optional if your frontend needs it
 
 volumes:
   mongo-data:
