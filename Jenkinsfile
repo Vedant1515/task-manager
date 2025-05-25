@@ -20,13 +20,13 @@ pipeline {
 
     stage('Build') {
       steps {
-        echo '📦 Installing dependencies...'
+        echo ' Installing dependencies...'
         bat 'npm install'
 
-        echo '🐳 Building Docker image with version tag...'
+        echo ' Building Docker image with version tag...'
         bat "docker build -t %BUILD_TAG% ."
 
-        echo '📌 Committing build tag to version control...'
+        echo ' Committing build tag to version control...'
         bat '''
           git config user.email "ci@taskmanager.com"
           git config user.name "CI Bot"
@@ -38,7 +38,7 @@ pipeline {
 
     stage('Test') {
       steps {
-        echo '🧪 Cleaning up existing test containers...'
+        echo ' Cleaning up existing test containers...'
         bat 'docker rm -f task-manager-mongo task-manager-test 2>nul || exit /b 0'
 
         echo '🐳 Building and running unit/integration tests...'
@@ -49,7 +49,7 @@ pipeline {
 
     stage('Code Quality') {
       steps {
-        echo '🔍 Running SonarQube analysis...'
+        echo ' Running SonarQube analysis...'
         withSonarQubeEnv('MySonarQube') {
           bat 'npm run test -- --coverage'
           bat 'npx sonar-scanner'
@@ -59,10 +59,10 @@ pipeline {
 
     stage('Security') {
       steps {
-        echo '🛡️ Running npm audit...'
+        echo ' Running npm audit...'
         bat 'npm audit --json > audit-report.json || exit /b 0'
 
-        echo '🔐 Running Trivy scan on Docker image...'
+        echo ' Running Trivy scan on Docker image...'
         bat '''
           trivy image --severity CRITICAL,HIGH --no-progress --exit-code 0 %BUILD_TAG% > trivy-report.txt || exit /b 0
         '''
@@ -83,10 +83,10 @@ pipeline {
 
     stage('Deploy to Test') {
       steps {
-        echo '🚀 Deploying to test environment...'
+        echo ' Deploying to test environment...'
         bat 'docker-compose up -d --build'
 
-        echo '✅ Healthcheck verification...'
+        echo ' Healthcheck verification...'
         bat 'call healthcheck.bat'
       }
     }
@@ -96,7 +96,7 @@ pipeline {
         expression { currentBuild.currentResult == 'SUCCESS' }
       }
       steps {
-        echo '🚀 Pushing image to Docker Hub...'
+        echo ' Pushing image to Docker Hub...'
         withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
           bat "docker login -u %DOCKER_USER% -p %DOCKER_PASS%"
           bat "docker tag %BUILD_TAG% vedant1515/task-manager-app:latest"
@@ -110,7 +110,7 @@ pipeline {
         expression { currentBuild.currentResult == 'SUCCESS' }
       }
       steps {
-        echo '📈 Monitoring logs...'
+        echo 'Monitoring logs...'
         bat 'docker ps -a --filter "name=task-manager"'
         bat 'docker logs task-manager-prometheus || exit /b 0'
         bat 'docker logs task-manager-grafana || exit /b 0'
@@ -121,10 +121,10 @@ pipeline {
 
   post {
     success {
-      echo '✅ Pipeline completed successfully!'
+      echo ' Pipeline completed successfully!'
     }
     failure {
-      echo '❌ Pipeline failed.'
+      echo ' Pipeline failed.'
     }
   }
 }
